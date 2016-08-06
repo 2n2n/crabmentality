@@ -1,5 +1,9 @@
 (function(CM) {
 	'use strict';
+	var HITAREA = {
+		width: 70,
+		height: 50
+	}
 
 	CM.Game = function() {
 		this.player = {};
@@ -8,7 +12,7 @@
 	CM.Game.prototype = {
 		preload: function() {
 			// this.load.image('camerman', 'assets/images/down_orange_big.png');
-
+			
 		},
 		create: function() {
 			
@@ -20,12 +24,24 @@
 			this.platforms = this.game.add.group();
 			this.platforms.enableBody = true;
 			this.platforms.enableBodyDebug = true;
+			
 
 			this.player = this.game.add.sprite(100,1000, 'camerman');
-			this.game.physics.enable(this.player, Phaser.Physics.ARCADE);
+			// this.player.addChild();
+			this.player.hitArea = new Phaser.Rectangle(this.player.x-(HITAREA.width/2), this.player.centerY-(HITAREA.height/2), HITAREA.width,HITAREA.height);
 			this.camera.follow(this.player);
+
+			this.dummy = this.game.add.sprite(300, 1168);
+			this.dummy.hitArea = new Phaser.Rectangle(this.player.centerX-(HITAREA.width/2), this.player.centerY-(HITAREA.height/2), HITAREA.width,HITAREA.height);
+			// enable physics
+			this.game.physics.enable(this.player, Phaser.Physics.ARCADE);
+			this.game.physics.enable(this.dummy, Phaser.Physics.ARCADE);
+			
 			this.player.body.collideWorldBounds = true;
 			this.player.body.bounce.y = 0.2;
+			this.dummy.body.collideWorldBounds = true;
+			this.dummy.body.bounce.y = 0.2;
+			// console.log(this.player, this.player);
 
 			// this.game.camera.setPosition(0,2000);
 			this.player.camera = this.game.input.keyboard.createCursorKeys();
@@ -103,9 +119,21 @@
 			this.controls = this.game.input.keyboard.createCursorKeys();
 			this.jump = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 			this.jumptimer = 0;
+			console.log(this.player.width);
+			this.dummy['dbug_color'] = 'rgba(255,0,0,0.5)';
 		},
 		update: function() {
+			this.player.hitArea.x = (this.player.x + this.player.width/2);
+			this.player.hitArea.y = this.player.centerY-(HITAREA.height/2);
 			this.player.body.velocity.x = 0;
+
+			if(Phaser.Rectangle.intersects(this.player.hitArea, this.dummy.hitArea) ) {
+				this.dummy['dbug_color'] = 'rgba(255,225,0,0.5)';
+
+			}
+			else {
+				this.dummy['dbug_color'] = 'rgba(255,0,0,0.5)';
+			}
 			this.game.physics.arcade.collide(this.player, this.platforms, function(player, platform) {
 				platform.body.checkCollision.down = false;
 				platform.body.checkCollision.left = false;
@@ -120,15 +148,22 @@
 		    else if (this.controls.right.isDown) {
 		        this.player.body.velocity.x = 300;
 		    }
-		  
+		  	this.jumptimer = 0;
+
 		    if(this.jump.isDown && (this.player.body.onFloor() || this.player.body.touching.down) && this.game.time.now > this.jumptimer) {
 		    	this.player.body.velocity.y = -450;
-		    	this.jumptimer = this.game.time.now + 750;
+		    	this.jumptimer = this.game.time.now + 10;
 		    }
 		},
 		render: function() {
 			// this.game.debug.cameraInfo(this.game.camera, 32,32);
-        	this.game.debug.body(this.player) ;
+        	this.game.debug.body(this.player);
+        	this.game.debug.text(this.jumptimer, 32,32);
+        	this.game.debug.text(this.game.time.now, 32,50);
+        	this.game.debug.geom(this.player.hitArea, 'rgba(255,0,0,0.5)');
+        	this.game.debug.geom(this.dummy.hitArea, this.dummy['dbug_color']);
+        	this.game.debug.text(this.player.hitArea, 32, 10);
+
 			this.game.debug.bodyInfo(this.player, 32, 32);
 		}
 	}
