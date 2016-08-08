@@ -5,6 +5,22 @@
 		height: 50
 	}
 
+	function Move(controls) {
+		var self = this;
+		var moveLeft = function() {
+			self.body.velocity.x = -300;
+		};
+		var moveRight = moveRight = function() {
+			self.body.velocity.x = 300;
+		};
+		if (controls.left.isDown) {
+	        moveLeft();
+	    }
+	    else if (controls.right.isDown) {
+	        moveRight();
+	    }
+	}
+
 	CM.Game = function() {
 		this.player = {};
 	};
@@ -141,13 +157,14 @@
 				return true;
 			});
 
-			if (this.controls.left.isDown) {
-		        this.player.body.velocity.x = -300;
-		    }
+			Move.call(this.player, this.controls);
+			// if (this.controls.left.isDown) {
+		 //        this.player.body.velocity.x = -300;
+		 //    }
 
-		    else if (this.controls.right.isDown) {
-		        this.player.body.velocity.x = 300;
-		    }
+		 //    else if (this.controls.right.isDown) {
+		 //        this.player.body.velocity.x = 300;
+		 //    }
 		  	this.jumptimer = 0;
 
 		    if(this.jump.isDown && (this.player.body.onFloor() || this.player.body.touching.down) && this.game.time.now > this.jumptimer) {
